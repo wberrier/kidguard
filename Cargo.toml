@@ -3,6 +3,8 @@ name = "kidguard"
 version = "0.1.0"
 edition = "2021"
 authors = [ "Wade Berrier <wberrier@gmail.com>" ]
+license = "GPL"
+description = "Daemon to implement parental controls"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,3 +17,12 @@ confy = { version = "0", features = ["yaml_conf"], default-features = false }
 log = "0"
 env_logger = "0"
 runcmd = "0"
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/kidguard", dest = "/usr/bin/kidguard", mode = "755" },
+    { source = "files/usr/lib/systemd/system/kidguard.service", dest = "/usr/lib/systemd/system/kidguard.service", mode = "644" },
+]
+post_install_script = "if [ $1 -eq 1 ] && [ -x \"/usr/lib/systemd/systemd-update-helper\" ]; then /usr/lib/systemd/systemd-update-helper install-system-units kidguard.service || : ; fi"
+pre_uninstall_script = "if [ $1 -eq 0 ] && [ -x \"/usr/lib/systemd/systemd-update-helper\" ]; then /usr/lib/systemd/systemd-update-helper remove-system-units kidguard.service || : ; fi"
+post_uninstall_script = "if [ $1 -ge 1 ] && [ -x \"/usr/lib/systemd/systemd-update-helper\" ]; then /usr/lib/systemd/systemd-update-helper mark-restart-system-units kidguard.service || : ; fi"

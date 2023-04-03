@@ -1,0 +1,15 @@
+[Unit]
+Description=KigGuard Service
+Before=display-manager.service
+
+[Service]
+Environment="RUST_LOG=info"
+ExecStart=/usr/bin/kidguard
+
+# Keep this service running
+# (Haven't seen this, but just in case)
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
