@@ -1,0 +1,4 @@
+---
+users:
+  - username: testuser
+    account_status: Locked

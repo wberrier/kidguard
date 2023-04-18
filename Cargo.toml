@@ -1,6 +1,6 @@
 [package]
 name = "kidguard"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = [ "Wade Berrier <wberrier@gmail.com>" ]
 license = "GPL"
@@ -22,7 +22,8 @@ runcmd = "0"
 assets = [
     { source = "target/release/kidguard", dest = "/usr/bin/kidguard", mode = "755" },
     { source = "files/usr/lib/systemd/system/kidguard.service", dest = "/usr/lib/systemd/system/kidguard.service", mode = "644" },
+    { source = "files/etc/kidguard/kidguard.yml", dest = "/etc/kidguard/kidguard.yml", mode = "644", config = true },
 ]
-post_install_script = "if [ $1 -eq 1 ] && [ -x \"/usr/lib/systemd/systemd-update-helper\" ]; then /usr/lib/systemd/systemd-update-helper install-system-units kidguard.service || : ; fi"
-pre_uninstall_script = "if [ $1 -eq 0 ] && [ -x \"/usr/lib/systemd/systemd-update-helper\" ]; then /usr/lib/systemd/systemd-update-helper remove-system-units kidguard.service || : ; fi"
-post_uninstall_script = "if [ $1 -ge 1 ] && [ -x \"/usr/lib/systemd/systemd-update-helper\" ]; then /usr/lib/systemd/systemd-update-helper mark-restart-system-units kidguard.service || : ; fi"
+post_install_script = "if [ $1 -eq 1 ] ; then systemctl enable kidguard.service >/dev/null 2>&1 || : ; systemctl start kidguard.service >/dev/null 2>&1 || : ; fi"
+pre_uninstall_script = "if [ $1 -eq 0 ] ; then systemctl --no-reload disable kidguard.service > /dev/null 2>&1 || : ; systemctl stop kidguard.service > /dev/null 2>&1 || : ;  fi"
+post_uninstall_script = "systemctl daemon-reload >/dev/null 2>&1 || : ; if [ $1 -ge 1 ] ; then systemctl try-restart kidguard.service >/dev/null 2>&1 || : ; fi"
