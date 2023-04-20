@@ -22,6 +22,11 @@ async fn start() -> Result<()> {
     let mut sigint = signal(SignalKind::interrupt())?;
     let mut sigterm = signal(SignalKind::terminate())?;
     tokio::task::spawn(async move {
+        // Configure accounts on startup
+        if accounts::configure_accounts().await.is_err() {
+            error!("Error configuring the accounts");
+        }
+
         let mut timer = tokio::time::interval(Duration::from_secs(10));
 
         loop {
@@ -32,9 +37,8 @@ async fn start() -> Result<()> {
 
             tokio::select! {
                 _ = timer.tick() => {
-                    if accounts::configure_accounts().await.is_err() {
-                        error!("Error configuring the accounts");
-                    }
+                    // TODO: maybe check for config file modifications?
+                    trace!("Nothing to do...");
                 }
                 Some(_) = sigint.recv() => {
                     info!("Got sigint");

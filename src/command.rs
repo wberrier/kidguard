@@ -4,10 +4,12 @@
 //! Maybe for this project we don't need async process yet...
 
 use anyhow::{anyhow, Result};
+use log::trace;
 use runcmd::RunCmd;
 
 // for now, only return result
 pub fn run_command(command: &str) -> Result<()> {
+    trace!("Running command: {}", command);
     match RunCmd::new(command).execute().exitcode {
         0 => Ok(()),
         _ => Err(anyhow!("Error running command: {}", command)),

@@ -2,7 +2,7 @@ use crate::command::run_command;
 use crate::config;
 use crate::config::{AccountStatus, User};
 use anyhow::{anyhow, Result};
-use log::debug;
+use log::{debug, trace};
 
 struct Account {
     username: String,
@@ -25,12 +25,14 @@ impl Account {
     }
 
     async fn lock_account(&self) -> Result<()> {
+        trace!("Locking account: {}", self.username);
         match run_command(format!("passwd -l '{}'", self.username).as_str()) {
             Ok(_) => Ok(()),
             Err(error) => Err(anyhow!("Error locking account: {}", error)),
         }
     }
     async fn unlock_account(&self) -> Result<()> {
+        trace!("Unlocking account: {}", self.username);
         match run_command(format!("passwd -u '{}'", self.username).as_str()) {
             Ok(_) => Ok(()),
             Err(error) => Err(anyhow!("Error unlocking account: {}", error)),
@@ -38,9 +40,13 @@ impl Account {
     }
 
     async fn stop_sessions(&self) -> Result<()> {
+        trace!("Stopping sessions: {}", self.username);
         match run_command(format!("loginctl terminate-user '{}'", self.username).as_str()) {
             Ok(_) => Ok(()),
-            Err(error) => Err(anyhow!("Error stopping sessions: {}", error)),
+            Err(error) => {
+                debug!("Stopping sessions failed for {}: {}", self.username, error);
+                Ok(())
+            }
         }
     }
 }
