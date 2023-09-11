@@ -15,3 +15,12 @@ parental controls.
 `/etc/kidguard/kidguard.yml` holds some configuration files.
 
 Can also specify some central configuration
+
+# Build
+
+    cargo build --release
+
+# Packaging
+
+    cargo install cargo-generate-rpm
+    cargo generate-rpm
