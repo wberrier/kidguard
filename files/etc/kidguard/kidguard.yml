@@ -1,4 +1,8 @@
 ---
-users:
+accounts:
   - username: testuser
-    account_status: Locked
+    status: Locked
+    type: Normal
+  - username: gdmtestuser
+    status: Locked
+    type: GDMAutoLogin

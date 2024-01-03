@@ -4,26 +4,35 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum AccountStatus {
+pub enum Status {
     Locked,
     Unlocked,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct User {
+pub enum Type {
+    Normal, // TODO: bad name?
+    GDMAutoLogin,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Account {
     pub username: String,
-    pub account_status: AccountStatus,
+    pub status: Status,
+    pub r#type: Type,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    pub users: Vec<User>,
+    pub accounts: Vec<Account>,
 }
 
 /// `Config` implements `Default`
 impl ::std::default::Default for Config {
     fn default() -> Self {
-        Self { users: Vec::new() }
+        Self {
+            accounts: Vec::new(),
+        }
     }
 }
 

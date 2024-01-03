@@ -1,20 +1,10 @@
 use crate::command::run_command;
 use crate::config;
-use crate::config::{AccountStatus, User};
+use crate::config::{Account, Status};
 use anyhow::{anyhow, Result};
 use log::{debug, trace};
 
-struct Account {
-    username: String,
-}
-
 impl Account {
-    fn new(username: &str) -> Self {
-        Self {
-            username: username.to_string(),
-        }
-    }
-
     async fn lock_computer(&self) -> Result<()> {
         self.lock_account().await?;
         self.stop_sessions().await
@@ -51,20 +41,19 @@ impl Account {
     }
 }
 
-async fn configure_account(user: &User) -> Result<()> {
-    let account = Account::new(&user.username);
-    match user.account_status {
-        AccountStatus::Locked => account.lock_computer().await,
-        AccountStatus::Unlocked => account.unlock_computer().await,
+async fn configure_account(account: &Account) -> Result<()> {
+    match account.status {
+        Status::Locked => account.lock_computer().await,
+        Status::Unlocked => account.unlock_computer().await,
     }
 }
 
 pub async fn configure_accounts() -> Result<()> {
     let conf = &config::CONFIG;
 
-    for user in &conf.users {
-        debug!("Configuring user: {}", user.username);
-        configure_account(user).await?;
+    for account in &conf.accounts {
+        debug!("Configuring user: {}", account.username);
+        configure_account(account).await?;
     }
 
     Ok(())
