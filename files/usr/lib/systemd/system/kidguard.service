@@ -1,5 +1,5 @@
 [Unit]
-Description=KigGuard Service
+Description=KidGuard Service
 Before=display-manager.service
 
 [Service]
