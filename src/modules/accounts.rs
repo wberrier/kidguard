@@ -58,14 +58,13 @@ impl Account {
         match self.r#type {
             config::Type::Normal => {
                 self.lock_account().await?;
+                self.stop_sessions().await?;
             }
             config::Type::GDMAutoLogin => {
                 let gdm_config = GDMConfig {};
                 gdm_config.disable_autologin()?;
             }
         }
-
-        self.stop_sessions().await?;
 
         Ok(())
     }
