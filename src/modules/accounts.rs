@@ -3,15 +3,85 @@ use crate::config;
 use crate::config::{Account, Status};
 use anyhow::{anyhow, Result};
 use log::{debug, trace};
+use std::fs;
+
+static GDM_CONFIG: &str = "/etc/gdm/custom.conf";
+
+struct GDMConfig {}
+
+impl GDMConfig {
+    fn restart(&self) -> Result<()> {
+        match run_command("systemctl restart gdm") {
+            Ok(_) => Ok(()),
+            Err(error) => Err(anyhow!("Error restart gdm: {}", error)),
+        }
+    }
+
+    fn read_config(&self) -> Result<String> {
+        let contents = fs::read_to_string(GDM_CONFIG)?;
+
+        Ok(contents)
+    }
+
+    fn write_config(&self, config: String) -> Result<()> {
+        fs::write(GDM_CONFIG, config)?;
+        Ok(())
+    }
+
+    fn disable_autologin(&self) -> Result<()> {
+        let mut config = self.read_config()?;
+
+        config = config.replace("AutomaticLoginEnable=True", "AutomaticLoginEnable=False");
+
+        self.write_config(config)?;
+
+        self.restart()?;
+
+        Ok(())
+    }
+
+    fn enable_autologin(&self) -> Result<()> {
+        let mut config = self.read_config()?;
+
+        config = config.replace("AutomaticLoginEnable=False", "AutomaticLoginEnable=True");
+
+        self.write_config(config)?;
+
+        self.restart()?;
+
+        Ok(())
+    }
+}
 
 impl Account {
     async fn lock_computer(&self) -> Result<()> {
-        self.lock_account().await?;
-        self.stop_sessions().await
+        match self.r#type {
+            config::Type::Normal => {
+                self.lock_account().await?;
+            }
+            config::Type::GDMAutoLogin => {
+                let gdm_config = GDMConfig {};
+                gdm_config.disable_autologin()?;
+            }
+        }
+
+        self.stop_sessions().await?;
+
+        Ok(())
     }
 
     async fn unlock_computer(&self) -> Result<()> {
-        self.unlock_account().await
+        match self.r#type {
+            config::Type::Normal => {
+                self.unlock_account().await?;
+            }
+            config::Type::GDMAutoLogin => {
+                let gdm_config = GDMConfig {};
+                gdm_config.enable_autologin()?;
+            }
+        }
+
+        Ok(())
     }
 
     async fn lock_account(&self) -> Result<()> {
