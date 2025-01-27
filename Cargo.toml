@@ -19,7 +19,7 @@ serde = { version = "1", features = ["derive"] }
 confy = { version = "0", features = ["yaml_conf"], default-features = false }
 log = "0"
 env_logger = "0"
-runcmd = "0"
+shleazy = "0"
 
 [package.metadata.generate-rpm]
 assets = [
